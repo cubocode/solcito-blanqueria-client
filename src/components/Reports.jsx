@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Card, Row, Col, Table, Button, Form, InputGroup, Tab, Nav, Badge } from 'react-bootstrap';
-import { FiBarChart2, FiCalendar, FiDollarSign, FiShoppingBag, FiTrendingUp, FiDownload, FiFilter, FiActivity, FiTag } from 'react-icons/fi';
+import { Card, Row, Col, Table, Button, Form, Tab, Nav, Badge } from 'react-bootstrap';
+import { FiBarChart2, FiDollarSign, FiShoppingBag, FiTrendingUp, FiTrendingDown, FiDownload, FiFilter, FiActivity, FiTag } from 'react-icons/fi';
 
-function Reports({ sales, products }) {
+function Reports({ sales, products, cashMovements }) {
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
   const [filterPaymentMethod, setFilterPaymentMethod] = useState('');
@@ -107,6 +107,29 @@ function Reports({ sales, products }) {
     });
   });
 
+  // Filter and sum manual cash Egresos in date range
+  const filteredMovements = (cashMovements || []).filter(mov => {
+    if (mov.tipo !== 'Egreso') return false;
+
+    let matchesDate = true;
+    const movDateObj = new Date(mov.fecha);
+    const y = movDateObj.getFullYear();
+    const m = String(movDateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(movDateObj.getDate()).padStart(2, '0');
+    const movLocalDateStr = `${y}-${m}-${d}`;
+
+    if (filterStartDate) {
+      matchesDate = matchesDate && movLocalDateStr >= filterStartDate;
+    }
+    if (filterEndDate) {
+      matchesDate = matchesDate && movLocalDateStr <= filterEndDate;
+    }
+
+    return matchesDate;
+  });
+
+  const totalCost = filteredMovements.reduce((sum, m) => sum + parseFloat(m.monto || 0), 0);
+  const totalProfit = totalRevenue - totalCost;
   const avgTicket = filteredSales.length ? (totalRevenue / filteredSales.length) : 0;
 
   // Top 5 Products
@@ -278,57 +301,93 @@ function Reports({ sales, products }) {
 
       {/* Statistical KPIs Cards */}
       <Row className="g-3 mb-4">
-        <Col lg={3} sm={6}>
-          <Card className="border-0 shadow-sm" style={{ borderLeft: '4px solid #10b981' }}>
-            <Card.Body className="p-3 d-flex align-items-center gap-3">
-              <div className="p-3 rounded-circle text-success" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}>
-                <FiDollarSign size={24} />
+        {/* Card 1: Ingresos Totales */}
+        <Col lg={2} md={4} sm={6}>
+          <Card className="border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #10b981' }}>
+            <Card.Body className="p-3 d-flex align-items-center gap-2">
+              <div className="p-2.5 rounded-circle text-success" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', display: 'inline-flex' }}>
+                <FiDollarSign size={20} />
               </div>
               <div>
-                <span className="text-muted small d-block uppercase fw-semibold">Ingresos Totales</span>
-                <strong className="h4 mb-0 fw-bold d-block text-dark">${totalRevenue.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</strong>
+                <span className="text-muted small d-block uppercase fw-semibold" style={{ fontSize: '0.7rem' }}>Ingresos Totales</span>
+                <strong className="h5 mb-0 fw-bold d-block text-dark">${totalRevenue.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</strong>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* Card 2: Egresos Totales */}
+        <Col lg={2} md={4} sm={6}>
+          <Card className="border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #ef4444' }}>
+            <Card.Body className="p-3 d-flex align-items-center gap-2">
+              <div className="p-2.5 rounded-circle text-danger" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', display: 'inline-flex' }}>
+                <FiTrendingDown size={20} />
+              </div>
+              <div>
+                <span className="text-muted small d-block uppercase fw-semibold" style={{ fontSize: '0.7rem' }}>Egresos Totales</span>
+                <strong className="h5 mb-0 fw-bold d-block text-dark">${totalCost.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</strong>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* Card 3: Ganancia */}
+        <Col lg={2} md={4} sm={6}>
+          <Card className="border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #0d9488' }}>
+            <Card.Body className="p-3 d-flex align-items-center gap-2">
+              <div className="p-2.5 rounded-circle text-teal" style={{ backgroundColor: 'rgba(13, 148, 136, 0.1)', color: '#0d9488', display: 'inline-flex' }}>
+                <FiDollarSign size={20} />
+              </div>
+              <div>
+                <span className="text-muted small d-block uppercase fw-semibold" style={{ fontSize: '0.7rem' }}>Ganancia</span>
+                <strong className={`h5 mb-0 fw-bold d-block ${totalProfit >= 0 ? 'text-success' : 'text-danger'}`}>
+                  ${totalProfit.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
+                </strong>
               </div>
             </Card.Body>
           </Card>
         </Col>
         
-        <Col lg={3} sm={6}>
-          <Card className="border-0 shadow-sm" style={{ borderLeft: '4px solid #3b82f6' }}>
-            <Card.Body className="p-3 d-flex align-items-center gap-3">
-              <div className="p-3 rounded-circle text-primary" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
-                <FiShoppingBag size={24} />
+        {/* Card 4: Total de Ventas */}
+        <Col lg={2} md={4} sm={6}>
+          <Card className="border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #3b82f6' }}>
+            <Card.Body className="p-3 d-flex align-items-center gap-2">
+              <div className="p-2.5 rounded-circle text-primary" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', display: 'inline-flex' }}>
+                <FiShoppingBag size={20} />
               </div>
               <div>
-                <span className="text-muted small d-block uppercase fw-semibold">Total de Ventas</span>
-                <strong className="h4 mb-0 fw-bold d-block text-dark">{filteredSales.length} transac.</strong>
+                <span className="text-muted small d-block uppercase fw-semibold" style={{ fontSize: '0.7rem' }}>Total Ventas</span>
+                <strong className="h5 mb-0 fw-bold d-block text-dark">{filteredSales.length} transac.</strong>
               </div>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col lg={3} sm={6}>
-          <Card className="border-0 shadow-sm" style={{ borderLeft: '4px solid #8b5cf6' }}>
-            <Card.Body className="p-3 d-flex align-items-center gap-3">
-              <div className="p-3 rounded-circle text-purple" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)' }}>
-                <FiTrendingUp size={24} />
+        {/* Card 5: Ticket Promedio */}
+        <Col lg={2} md={4} sm={6}>
+          <Card className="border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #8b5cf6' }}>
+            <Card.Body className="p-3 d-flex align-items-center gap-2">
+              <div className="p-2.5 rounded-circle text-purple" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)', display: 'inline-flex' }}>
+                <FiTrendingUp size={20} />
               </div>
               <div>
-                <span className="text-muted small d-block uppercase fw-semibold">Ticket Promedio</span>
-                <strong className="h4 mb-0 fw-bold d-block text-dark">${avgTicket.toLocaleString('es-AR', { maximumFractionDigits: 1 })}</strong>
+                <span className="text-muted small d-block uppercase fw-semibold" style={{ fontSize: '0.7rem' }}>Ticket Promedio</span>
+                <strong className="h5 mb-0 fw-bold d-block text-dark">${avgTicket.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</strong>
               </div>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col lg={3} sm={6}>
-          <Card className="border-0 shadow-sm" style={{ borderLeft: '4px solid #f59e0b' }}>
-            <Card.Body className="p-3 d-flex align-items-center gap-3">
-              <div className="p-3 rounded-circle text-amber" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
-                <FiActivity size={24} />
+        {/* Card 6: Unidades Vendidas */}
+        <Col lg={2} md={4} sm={6}>
+          <Card className="border-0 shadow-sm h-100" style={{ borderLeft: '4px solid #f59e0b' }}>
+            <Card.Body className="p-3 d-flex align-items-center gap-2">
+              <div className="p-2.5 rounded-circle text-amber" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', display: 'inline-flex' }}>
+                <FiActivity size={20} />
               </div>
               <div>
-                <span className="text-muted small d-block uppercase fw-semibold">Unidades Vendidas</span>
-                <strong className="h4 mb-0 fw-bold d-block text-dark">{totalUnitsSold} unidades</strong>
+                <span className="text-muted small d-block uppercase fw-semibold" style={{ fontSize: '0.7rem' }}>Unidades Vendidas</span>
+                <strong className="h5 mb-0 fw-bold d-block text-dark">{totalUnitsSold} u.</strong>
               </div>
             </Card.Body>
           </Card>

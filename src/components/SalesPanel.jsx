@@ -4,10 +4,10 @@ import { FiTrash2, FiSearch, FiShoppingCart, FiUser, FiCheckCircle, FiPlus, FiMi
 import TicketLayout from './TicketLayout';
 import { useToast } from '../context/ToastContext';
 
-function SalesPanel({ 
-  products, 
-  clients, 
-  onAddSale, 
+function SalesPanel({
+  products,
+  clients,
+  onAddSale,
   cashSession,
   cart,
   setCart,
@@ -21,6 +21,27 @@ function SalesPanel({
   const [searchResults, setSearchResults] = useState([]);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [currentSaleReceipt, setCurrentSaleReceipt] = useState(null);
+
+  // Split payment states for Pago Combinado
+  const [splitCash, setSplitCash] = useState(0);
+  const [splitCard, setSplitCard] = useState(0);
+  const [splitTransfer, setSplitTransfer] = useState(0);
+  const [splitQr, setSplitQr] = useState(0);
+  const [splitCtaCte, setSplitCtaCte] = useState(0);
+
+  // Calculate totals
+  const totalSale = cart.reduce((acc, curr) => acc + curr.subtotal, 0);
+
+  // Re-default splits when payment method changes or total sale changes
+  useEffect(() => {
+    if (paymentMethod === 'Combinado') {
+      setSplitCash(totalSale);
+      setSplitCard(0);
+      setSplitTransfer(0);
+      setSplitQr(0);
+      setSplitCtaCte(0);
+    }
+  }, [paymentMethod, totalSale]);
 
   // Search handler (live database query with 300ms debounce)
   useEffect(() => {
@@ -114,19 +135,27 @@ function SalesPanel({
     ));
   };
 
-  // Calculate totals
-  const totalSale = cart.reduce((acc, curr) => acc + curr.subtotal, 0);
-
   // Client checks
-  const selectedClient = clients.find(c => c.id === selectedClientId);
+  const selectedClient = clients.find(c => String(c.id) === String(selectedClientId));
   const isSuspended = selectedClient?.status === 'Suspendido';
   const overCreditLimit = selectedClient
     ? (selectedClient.balance + totalSale > selectedClient.creditLimit)
     : false;
 
+  // Calculate split totals
+  const sumSplits = parseFloat(splitCash || 0) +
+    parseFloat(splitCard || 0) +
+    parseFloat(splitTransfer || 0) +
+    parseFloat(splitQr || 0) +
+    parseFloat(splitCtaCte || 0);
+
   // Decide if checkout is allowed (enforcing that shift must be open)
   const isCheckoutDisabled = cart.length === 0 || !cashSession ||
-    (paymentMethod === 'Cuenta Corriente' && (!selectedClientId || isSuspended || overCreditLimit));
+    (paymentMethod === 'Cuenta Corriente' && (!selectedClientId || isSuspended || overCreditLimit)) ||
+    (paymentMethod === 'Combinado' && (
+      Math.abs(sumSplits - totalSale) > 0.01 ||
+      (splitCtaCte > 0 && (!selectedClientId || isSuspended || !selectedClient || (selectedClient.balance || 0) + splitCtaCte > (selectedClient.creditLimit || 0)))
+    ));
 
   // Confirm Sale
   const handleConfirmSale = async () => {
@@ -144,7 +173,12 @@ function SalesPanel({
         salePrice: item.salePrice,
         subtotal: item.subtotal
       })),
-      total: totalSale
+      total: totalSale,
+      pago_efectivo: paymentMethod === 'Combinado' ? parseFloat(splitCash || 0) : (paymentMethod === 'Efectivo' ? totalSale : 0),
+      pago_tarjeta: paymentMethod === 'Combinado' ? parseFloat(splitCard || 0) : (paymentMethod === 'Tarjeta' ? totalSale : 0),
+      pago_transferencia: paymentMethod === 'Combinado' ? parseFloat(splitTransfer || 0) : (paymentMethod === 'Transferencia' ? totalSale : 0),
+      pago_qr: paymentMethod === 'Combinado' ? parseFloat(splitQr || 0) : (paymentMethod === 'QR' ? totalSale : 0),
+      pago_cta_cte: paymentMethod === 'Combinado' ? parseFloat(splitCtaCte || 0) : (paymentMethod === 'Cuenta Corriente' ? totalSale : 0)
     };
 
     const dbSale = await onAddSale(newSale);
@@ -154,6 +188,11 @@ function SalesPanel({
       setCart([]);
       setSelectedClientId('');
       setPaymentMethod('Efectivo');
+      setSplitCash(0);
+      setSplitCard(0);
+      setSplitTransfer(0);
+      setSplitQr(0);
+      setSplitCtaCte(0);
     }
   };
 
@@ -330,7 +369,7 @@ function SalesPanel({
               </Form.Group>
 
               {/* Selector de Método de Pago */}
-              <Form.Group className="mb-4">
+              <Form.Group className="mb-3">
                 <Form.Label className="fw-semibold text-muted">Método de Pago</Form.Label>
                 <Form.Select
                   value={paymentMethod}
@@ -341,9 +380,135 @@ function SalesPanel({
                   <option value="Tarjeta">Tarjeta de Crédito / Débito</option>
                   <option value="Transferencia">Transferencia Bancaria</option>
                   <option value="QR">Mercado Pago / QR</option>
-                  <option value="Cuenta Corriente">Cuenta Corriente (Al Fiado)</option>
+                  <option value="Cuenta Corriente">Cuenta Corriente</option>
+                  <option value="Combinado">Pago Combinado</option>
                 </Form.Select>
               </Form.Group>
+
+              {/* Pago Combinado Form breakdown */}
+              {paymentMethod === 'Combinado' && (
+                <div className="bg-light p-3 rounded-3 mb-3 border text-start">
+                  <h6 className="fw-bold mb-2 text-dark" style={{ fontSize: '0.85rem' }}>Desglose de Pago Combinado</h6>
+
+                  <Form.Group className="mb-2">
+                    <Form.Label className="small fw-semibold text-muted mb-0" style={{ fontSize: '0.75rem' }}>Efectivo ($)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      size="sm"
+                      min="0"
+                      step="any"
+                      value={splitCash}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(',', '.');
+                        if (/^\d*\.?\d*$/.test(val)) {
+                          setSplitCash(val);
+                        }
+                      }}
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-2">
+                    <Form.Label className="small fw-semibold text-muted mb-0" style={{ fontSize: '0.75rem' }}>Tarjeta ($)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      size="sm"
+                      min="0"
+                      step="any"
+                      value={splitCard}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(',', '.');
+                        if (/^\d*\.?\d*$/.test(val)) {
+                          setSplitCard(val);
+                        }
+                      }}
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-2">
+                    <Form.Label className="small fw-semibold text-muted mb-0" style={{ fontSize: '0.75rem' }}>Transferencia ($)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      size="sm"
+                      min="0"
+                      step="any"
+                      value={splitTransfer}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(',', '.');
+                        if (/^\d*\.?\d*$/.test(val)) {
+                          setSplitTransfer(val);
+                        }
+                      }}
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-2">
+                    <Form.Label className="small fw-semibold text-muted mb-0" style={{ fontSize: '0.75rem' }}>QR / Mercado Pago ($)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      size="sm"
+                      min="0"
+                      step="any"
+                      value={splitQr}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(',', '.');
+                        if (/^\d*\.?\d*$/.test(val)) {
+                          setSplitQr(val);
+                        }
+                      }}
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label className="small fw-semibold text-muted mb-0" style={{ fontSize: '0.75rem' }}>Cuenta Corriente ($)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      size="sm"
+                      min="0"
+                      step="any"
+                      value={splitCtaCte}
+                      disabled={!selectedClientId}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(',', '.');
+                        if (/^\d*\.?\d*$/.test(val)) {
+                          setSplitCtaCte(val);
+                        }
+                      }}
+                      placeholder={!selectedClientId ? "Seleccione cliente primero" : ""}
+                    />
+                  </Form.Group>
+
+                  <div className="border-top pt-2 mt-2 d-flex justify-content-between align-items-center">
+                    <span className="small text-muted fw-semibold" style={{ fontSize: '0.8rem' }}>Suma Cargada:</span>
+                    <span className={`fw-bold small ${Math.abs(sumSplits - totalSale) < 0.01 ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.8rem' }}>
+                      ${sumSplits.toLocaleString('es-AR')} / ${totalSale.toLocaleString('es-AR')}
+                    </span>
+                  </div>
+
+                  {Math.abs(sumSplits - totalSale) > 0.01 && (
+                    <div className="text-danger small fw-bold mt-1 text-center" style={{ fontSize: '0.75rem' }}>
+                      {sumSplits < totalSale
+                        ? `Restan cargar $${(totalSale - sumSplits).toLocaleString('es-AR')}`
+                        : `Sobrante de $${(sumSplits - totalSale).toLocaleString('es-AR')}`
+                      }
+                    </div>
+                  )}
+
+                  {splitCtaCte > 0 && selectedClient && (
+                    <div className="border-top pt-2 mt-2 text-start small" style={{ fontSize: '0.75rem' }}>
+                      <div className="text-muted mb-1">Cta. Cte. Proyección:</div>
+                      <div className="d-flex justify-content-between">
+                        <span>Límite disponible:</span>
+                        <span className="fw-semibold">${(selectedClient.creditLimit - selectedClient.balance).toLocaleString('es-AR')}</span>
+                      </div>
+                      {selectedClient.balance + splitCtaCte > selectedClient.creditLimit && (
+                        <div className="text-danger fw-bold mt-1">
+                          ⚠️ Supera el límite de crédito disponible.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Cash closed warning */}
               {!cashSession && (

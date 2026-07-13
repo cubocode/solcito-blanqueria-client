@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Form, Row, Col, Modal, Card, InputGroup, Badge } from 'react-bootstrap';
-import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiUserPlus, FiLock, FiUser, FiSliders } from 'react-icons/fi';
+import { Table, Button, Form, Row, Col, Modal, Card, InputGroup } from 'react-bootstrap';
+import { FiEdit2, FiTrash2, FiSearch, FiUserPlus, FiLock, FiSliders } from 'react-icons/fi';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 
@@ -45,6 +45,7 @@ function Configuration() {
 
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const openAddModal = () => {
@@ -98,10 +99,10 @@ function Configuration() {
     }
 
     try {
-      const url = isEditMode 
+      const url = isEditMode
         ? `http://localhost:3001/api/usuarios/${currentUser.id}`
         : 'http://localhost:3001/api/usuarios';
-      
+
       const method = isEditMode ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -246,7 +247,7 @@ function Configuration() {
                       <td className="font-monospace text-muted">@{user.usuario}</td>
                       <td>{user.dni}</td>
                       <td>
-                        <span 
+                        <span
                           className={`badge ${user.nivel === 2 ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary'} px-2.5 py-1.5`}
                           style={{
                             fontSize: '0.75rem',
@@ -331,7 +332,12 @@ function Configuration() {
                     required
                     placeholder="Ingrese número de documento"
                     value={formDni}
-                    onChange={(e) => setFormDni(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^\d*$/.test(val) && val.length <= 8) {
+                        setFormDni(val);
+                      }
+                    }}
                   />
                 </Form.Group>
               </Col>

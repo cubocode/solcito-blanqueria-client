@@ -8,8 +8,8 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen, currentUser }) {
   const navigate = useNavigate();
 
   const allMenuItems = [
-    { path: '/pos', label: 'Punto de Venta (POS)', icon: <FiShoppingBag size={20} />, minLevel: 1 },
-    { path: '/inventario', label: 'Inventario / Stock', icon: <FiLayers size={20} />, minLevel: 2 },
+    { path: '/pos', label: 'Punto de Venta', icon: <FiShoppingBag size={20} />, minLevel: 1 },
+    { path: '/inventario', label: 'Inventario', icon: <FiLayers size={20} />, minLevel: 2 },
     { path: '/proveedores', label: 'Proveedores', icon: <FiTruck size={20} />, minLevel: 2 },
     { path: '/clientes', label: 'Cuentas Corrientes', icon: <FiUsers size={20} />, minLevel: 2 },
     { path: '/historial', label: 'Historial de Ventas', icon: <FiClock size={20} />, minLevel: 2 },

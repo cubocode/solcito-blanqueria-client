@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import KPICards from './components/KPICards';
 import SalesPanel from './components/SalesPanel';
+// eslint-disable-next-line no-unused-vars
 import StockManagement from './components/StockManagement';
 import SuppliersManagement from './components/SuppliersManagement';
 import CurrentAccounts from './components/CurrentAccounts';
@@ -53,6 +54,7 @@ function App() {
   const [sales, setSales] = useState([]);
   const [cashSession, setCashSession] = useState(null);
   const [cashHistory, setCashHistory] = useState([]);
+  const [cashMovements, setCashMovements] = useState([]);
 
   // Derived mapped product list for selectors, sales processing and KPI cards
   const products = dbProducts.map((prod) => ({
@@ -145,6 +147,18 @@ function App() {
     }
   };
 
+  const fetchCashMovements = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/cajas/movimientos');
+      if (response.ok) {
+        const data = await response.json();
+        setCashMovements(data);
+      }
+    } catch (err) {
+      console.error('Error al cargar movimientos de caja:', err);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchProducts();
@@ -153,6 +167,7 @@ function App() {
       fetchClients();
       fetchSuppliers();
       fetchSales();
+      fetchCashMovements();
     }
   }, [isAuthenticated]);
 
@@ -169,7 +184,12 @@ function App() {
           metodo_pago: newSale.paymentMethod,
           total: newSale.total,
           cliente_id: newSale.clientId,
-          items: newSale.items
+          items: newSale.items,
+          pago_efectivo: newSale.pago_efectivo,
+          pago_tarjeta: newSale.pago_tarjeta,
+          pago_transferencia: newSale.pago_transferencia,
+          pago_qr: newSale.pago_qr,
+          pago_cta_cte: newSale.pago_cta_cte
         })
       });
       if (response.ok) {
@@ -528,6 +548,7 @@ function App() {
       if (response.ok) {
         showToast(`Movimiento de ${type} registrado.`, 'success');
         fetchActiveCash();
+        fetchCashMovements();
       } else {
         const errData = await response.json();
         showToast(errData.error || 'Error al registrar el movimiento.', 'error');
@@ -554,7 +575,8 @@ function App() {
         showToast('Caja cerrada correctamente.', 'success');
         await Promise.all([
           fetchActiveCash(),
-          fetchCashHistory()
+          fetchCashHistory(),
+          fetchCashMovements()
         ]);
       } else {
         showToast('Error al cerrar la caja.', 'error');
@@ -623,10 +645,10 @@ function App() {
             <div className="text-end no-print">
               <span className="small text-muted d-block" style={{ fontSize: '0.75rem' }}>Usuario</span>
               <strong className="text-dark small" style={{ fontSize: '0.85rem' }}>
-                {currentUser ? `${currentUser.nombre} ${currentUser.apellido}` : 'Administrador'}
+                {currentUser ? currentUser.usuario : 'admin'}
               </strong>
             </div>
-            
+
             {/* Initials Circle with Dropdown Menu */}
             <div className="position-relative">
               <button
@@ -644,13 +666,15 @@ function App() {
                 onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
               >
-                {currentUser ? `${currentUser.nombre[0]}${currentUser.apellido[0]}`.toUpperCase() : 'AD'}
+                {currentUser && currentUser.nombre && currentUser.apellido 
+                  ? `${currentUser.nombre[0]}${currentUser.apellido[0]}`.toUpperCase() 
+                  : 'AD'}
               </button>
-              
+
               {showProfileMenu && (
                 <>
-                  <div 
-                    onClick={() => setShowProfileMenu(false)} 
+                  <div
+                    onClick={() => setShowProfileMenu(false)}
                     style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 998 }}
                   />
                   <div
@@ -712,7 +736,7 @@ function App() {
                 setSelectedClientId={setPosSelectedClientId}
               />
             } />
-            
+
             {/* Admin only routes (Nivel 2) */}
             {currentUser?.nivel === 2 && (
               <>
@@ -749,7 +773,7 @@ function App() {
                   <SalesHistory sales={sales} />
                 } />
                 <Route path="/reportes" element={
-                  <Reports sales={sales} products={products} />
+                  <Reports sales={sales} products={products} cashMovements={cashMovements} />
                 } />
                 <Route path="/configuracion" element={
                   <Configuration />

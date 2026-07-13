@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Table, Button, Card, Form, Modal, InputGroup, Row, Col } from 'react-bootstrap';
-import { FiSearch, FiPrinter, FiShoppingBag, FiCalendar, FiDownload, FiTrash2 } from 'react-icons/fi';
+import { FiSearch, FiPrinter, FiShoppingBag, FiCalendar, FiDownload } from 'react-icons/fi';
 import TicketLayout from './TicketLayout';
 
 function SalesHistory({ sales }) {
@@ -116,7 +116,7 @@ function SalesHistory({ sales }) {
     const m = String(localToday.getMonth() + 1).padStart(2, '0');
     const d = String(localToday.getDate()).padStart(2, '0');
     const todayStr = `${y}-${m}-${d}`;
-    
+
     setFilterStartDate(todayStr);
     setFilterEndDate(todayStr);
   };
@@ -131,7 +131,7 @@ function SalesHistory({ sales }) {
   const exportToExcel = () => {
     // Headers
     const headers = ['ID Venta', 'Fecha y Hora', 'Cliente', 'Método de Pago', 'Unidades Vendidas', 'Total ($)'];
-    
+
     // Rows mapping
     const rows = sortedSales.map(sale => {
       const totalItemsCount = sale.items.reduce((acc, curr) => acc + curr.quantity, 0);
@@ -307,7 +307,7 @@ function SalesHistory({ sales }) {
                           </span>
                         </td>
                         <td className="text-center">
-                          <span 
+                          <span
                             className="badge px-2.5 py-1.5 fw-semibold border"
                             style={getPaymentMethodStyle(sale.paymentMethod)}
                           >
@@ -342,9 +342,9 @@ function SalesHistory({ sales }) {
                 Mostrando {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredSales.length)} de {filteredSales.length} ventas
               </span>
               <div className="d-flex gap-1">
-                <Button 
-                  variant="outline-secondary" 
-                  size="sm" 
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(prev => prev - 1)}
                   style={{ borderRadius: '6px' }}
@@ -354,9 +354,9 @@ function SalesHistory({ sales }) {
                 <span className="btn btn-sm btn-light fw-bold disabled" style={{ borderRadius: '6px' }}>
                   Pág. {currentPage} de {totalPages}
                 </span>
-                <Button 
-                  variant="outline-secondary" 
-                  size="sm" 
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(prev => prev + 1)}
                   style={{ borderRadius: '6px' }}

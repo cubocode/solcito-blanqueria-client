@@ -402,7 +402,12 @@ function StockManagement({ dbProducts, suppliers, onAddProduct, onUpdateProduct,
                     min="0"
                     required
                     value={formStock}
-                    onChange={(e) => setFormStock(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^\d*$/.test(val)) {
+                        setFormStock(val);
+                      }
+                    }}
                   />
                 </Form.Group>
               </Col>
@@ -414,7 +419,12 @@ function StockManagement({ dbProducts, suppliers, onAddProduct, onUpdateProduct,
                     min="0"
                     required
                     value={formMinStock}
-                    onChange={(e) => setFormMinStock(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^\d*$/.test(val)) {
+                        setFormMinStock(val);
+                      }
+                    }}
                   />
                 </Form.Group>
               </Col>
@@ -428,7 +438,12 @@ function StockManagement({ dbProducts, suppliers, onAddProduct, onUpdateProduct,
                     step="0.01"
                     required
                     value={formCostPrice}
-                    onChange={(e) => setFormCostPrice(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(',', '.');
+                      if (/^\d*\.?\d*$/.test(val)) {
+                        setFormCostPrice(val);
+                      }
+                    }}
                   />
                 </Form.Group>
               </Col>
@@ -441,7 +456,12 @@ function StockManagement({ dbProducts, suppliers, onAddProduct, onUpdateProduct,
                     step="0.01"
                     required
                     value={formSalePrice}
-                    onChange={(e) => setFormSalePrice(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(',', '.');
+                      if (/^\d*\.?\d*$/.test(val)) {
+                        setFormSalePrice(val);
+                      }
+                    }}
                   />
                 </Form.Group>
               </Col>

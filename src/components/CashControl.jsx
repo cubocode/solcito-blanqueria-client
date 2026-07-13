@@ -84,7 +84,10 @@ function CashControl({ cashSession, cashHistory, onOpenCash, onAddCashMovement, 
       cashSession.salesCash +
       cashSession.clientPaymentsCash +
       cashSession.manualInflow -
-      cashSession.manualOutflow
+      cashSession.manualOutflow +
+      (cashSession.otherPaymentMethods?.Tarjeta || 0) +
+      (cashSession.otherPaymentMethods?.Transferencia || 0) +
+      (cashSession.otherPaymentMethods?.QR || 0)
     );
   };
 
@@ -134,7 +137,12 @@ function CashControl({ cashSession, cashHistory, onOpenCash, onAddCashMovement, 
                         className="border-start-0 ps-0 fw-bold fs-5"
                         placeholder="0.00"
                         value={initialAmount}
-                        onChange={(e) => setInitialAmount(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(',', '.');
+                          if (/^\d*\.?\d*$/.test(val)) {
+                            setInitialAmount(val);
+                          }
+                        }}
                       />
                     </InputGroup>
                   </Form.Group>
@@ -226,33 +234,37 @@ function CashControl({ cashSession, cashHistory, onOpenCash, onAddCashMovement, 
             </Row>
 
             {/* Non-cash controls */}
-            <Card className="custom-card border-0 mb-4 bg-light-subtle">
-              <Card.Body className="p-3">
-                <h6 className="fw-bold mb-3 text-muted d-flex align-items-center gap-1">
-                  <FiTrendingUp /> CONTROL GENERAL OTROS MEDIOS (TARJETA / TRANSFERENCIAS)
-                </h6>
-                <Row className="g-3">
-                  <Col sm={4}>
-                    <div className="bg-white p-2.5 rounded-2 border small">
-                      <span className="text-muted d-block mb-1">Total Tarjetas:</span>
-                      <strong className="text-dark font-monospace">${cashSession.otherPaymentMethods.Tarjeta.toLocaleString('es-AR')}</strong>
-                    </div>
-                  </Col>
-                  <Col sm={4}>
-                    <div className="bg-white p-2.5 rounded-2 border small">
-                      <span className="text-muted d-block mb-1">Total Transferencias:</span>
-                      <strong className="text-dark font-monospace">${cashSession.otherPaymentMethods.Transferencia.toLocaleString('es-AR')}</strong>
-                    </div>
-                  </Col>
-                  <Col sm={4}>
-                    <div className="bg-white p-2.5 rounded-2 border small">
-                      <span className="text-muted d-block mb-1">Total QR / MP:</span>
-                      <strong className="text-dark font-monospace">${cashSession.otherPaymentMethods.QR.toLocaleString('es-AR')}</strong>
-                    </div>
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
+            <div className="mb-4">
+              <h6 className="fw-bold mb-3 text-muted d-flex align-items-center gap-1 small text-uppercase" style={{ letterSpacing: '0.5px' }}>
+                <FiTrendingUp /> Control General Otros Medios
+              </h6>
+              <Row className="g-3">
+                <Col xs={6} sm={4}>
+                  <div className="bg-white p-3 rounded-3 border shadow-xs text-start">
+                    <span className="text-muted d-block small mb-1">TOTAL TARJETAS</span>
+                    <h5 className="fw-bold font-monospace m-0 text-dark">
+                      ${cashSession.otherPaymentMethods.Tarjeta.toLocaleString('es-AR')}
+                    </h5>
+                  </div>
+                </Col>
+                <Col xs={6} sm={4}>
+                  <div className="bg-white p-3 rounded-3 border shadow-xs text-start">
+                    <span className="text-muted d-block small mb-1">TOTAL TRANSFERENCIAS</span>
+                    <h5 className="fw-bold font-monospace m-0 text-dark">
+                      ${cashSession.otherPaymentMethods.Transferencia.toLocaleString('es-AR')}
+                    </h5>
+                  </div>
+                </Col>
+                <Col xs={6} sm={4}>
+                  <div className="bg-white p-3 rounded-3 border shadow-xs text-start">
+                    <span className="text-muted d-block small mb-1">TOTAL QR / MP</span>
+                    <h5 className="fw-bold font-monospace m-0 text-dark">
+                      ${cashSession.otherPaymentMethods.QR.toLocaleString('es-AR')}
+                    </h5>
+                  </div>
+                </Col>
+              </Row>
+            </div>
 
             {/* List of current shift movements */}
             <Card className="custom-card border-0">
@@ -342,7 +354,12 @@ function CashControl({ cashSession, cashHistory, onOpenCash, onAddCashMovement, 
                         className="fw-bold text-dark font-monospace"
                         placeholder="Monto contado físico"
                         value={realAmount}
-                        onChange={(e) => setRealAmount(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(',', '.');
+                          if (/^\d*\.?\d*$/.test(val)) {
+                            setRealAmount(val);
+                          }
+                        }}
                       />
                     </InputGroup>
                     <Form.Text className="text-muted">
@@ -536,7 +553,12 @@ function CashControl({ cashSession, cashHistory, onOpenCash, onAddCashMovement, 
                       required
                       placeholder="0.00"
                       value={movementAmount}
-                      onChange={(e) => setMovementAmount(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(',', '.');
+                        if (/^\d*\.?\d*$/.test(val)) {
+                          setMovementAmount(val);
+                        }
+                      }}
                     />
                   </InputGroup>
                 </Form.Group>

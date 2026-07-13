@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Table, Button, Form, Row, Col, Modal, Card, InputGroup, Badge, Alert } from 'react-bootstrap';
-import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiMail, FiPhone, FiMapPin, FiFileText, FiCalendar, FiDollarSign, FiClock, FiCheckCircle } from 'react-icons/fi';
+import { Table, Button, Form, Row, Col, Modal, Card, InputGroup, Badge } from 'react-bootstrap';
+import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiMail, FiPhone, FiMapPin, FiFileText, FiDollarSign, FiClock, FiCheckCircle } from 'react-icons/fi';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 
@@ -13,13 +13,13 @@ function SuppliersManagement({ suppliers, onAddSupplier, onUpdateSupplier, onDel
 
   // Modals state
   const [showAddEditModal, setShowAddEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
 
   // Active supplier for edit/delete
   const [currentSupplier, setCurrentSupplier] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [supplierToDelete, setSupplierToDelete] = useState(null);
+  //const [supplierToDelete, setSupplierToDelete] = useState(null);
 
   // Form Supplier states
   const [formName, setFormName] = useState('');
@@ -281,11 +281,11 @@ function SuppliersManagement({ suppliers, onAddSupplier, onUpdateSupplier, onDel
                 <Row className="g-3 mb-4">
                   <Col sm={6}>
                     <div className="d-flex align-items-center gap-2 text-muted small mb-2">
-                      <FiPhone size={14} className="text-teal" /> 
+                      <FiPhone size={14} className="text-teal" />
                       <strong>Teléfono:</strong> {selectedSupplier.phone || 'No registrado'}
                     </div>
                     <div className="d-flex align-items-center gap-2 text-muted small">
-                      <FiMail size={14} className="text-teal" /> 
+                      <FiMail size={14} className="text-teal" />
                       <strong>Email:</strong> {selectedSupplier.email || 'No registrado'}
                     </div>
                   </Col>
@@ -352,7 +352,7 @@ function SuppliersManagement({ suppliers, onAddSupplier, onUpdateSupplier, onDel
                                 ${order.monto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                               </td>
                               <td className="text-center">
-                                <span 
+                                <span
                                   className={`badge ${isReceived ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'} px-2 py-1.5`}
                                   style={{
                                     backgroundColor: isReceived ? 'rgba(25, 135, 84, 0.12)' : 'rgba(255, 193, 7, 0.12)'
@@ -444,7 +444,12 @@ function SuppliersManagement({ suppliers, onAddSupplier, onUpdateSupplier, onDel
                       required
                       placeholder="0.00"
                       value={orderAmount}
-                      onChange={(e) => setOrderAmount(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(',', '.');
+                        if (/^\d*\.?\d*$/.test(val)) {
+                          setOrderAmount(val);
+                        }
+                      }}
                     />
                   </InputGroup>
                 </Form.Group>
@@ -517,7 +522,12 @@ function SuppliersManagement({ suppliers, onAddSupplier, onUpdateSupplier, onDel
                     type="text"
                     placeholder="Ej. 11-4567-8901"
                     value={formPhone}
-                    onChange={(e) => setFormPhone(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^[0-9+\s-]*$/.test(val) && val.length <= 15) {
+                        setFormPhone(val);
+                      }
+                    }}
                   />
                 </Form.Group>
               </Col>

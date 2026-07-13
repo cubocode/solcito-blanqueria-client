@@ -1,4 +1,5 @@
 import { useState } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { Row, Col, Table, Button, Card, Form, Modal, InputGroup, Alert } from 'react-bootstrap';
 import { FiSearch, FiUserPlus, FiDollarSign, FiClock, FiCheck, FiSlash, FiAlertCircle, FiEdit2 } from 'react-icons/fi';
 import TicketLayout from './TicketLayout';
@@ -413,7 +414,12 @@ function CurrentAccounts({ clients, onAddClient, onUpdateClient, onAddClientMove
                     type="text"
                     placeholder="Ej. 341-1567890"
                     value={clientPhone}
-                    onChange={(e) => setClientPhone(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^[0-9+\s-]*$/.test(val) && val.length <= 15) {
+                        setClientPhone(val);
+                      }
+                    }}
                   />
                 </Form.Group>
               </Col>
@@ -426,7 +432,12 @@ function CurrentAccounts({ clients, onAddClient, onUpdateClient, onAddClientMove
                     step="100"
                     required
                     value={clientLimit}
-                    onChange={(e) => setClientLimit(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^\d*$/.test(val)) {
+                        setClientLimit(val);
+                      }
+                    }}
                   />
                 </Form.Group>
               </Col>
@@ -470,7 +481,12 @@ function CurrentAccounts({ clients, onAddClient, onUpdateClient, onAddClientMove
                     type="text"
                     placeholder="Ej. 341-1567890"
                     value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^[0-9+\s-]*$/.test(val) && val.length <= 15) {
+                        setEditPhone(val);
+                      }
+                    }}
                   />
                 </Form.Group>
               </Col>
@@ -483,7 +499,12 @@ function CurrentAccounts({ clients, onAddClient, onUpdateClient, onAddClientMove
                     step="100"
                     required
                     value={editLimit}
-                    onChange={(e) => setEditLimit(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^\d*$/.test(val)) {
+                        setEditLimit(val);
+                      }
+                    }}
                   />
                 </Form.Group>
               </Col>
@@ -523,7 +544,12 @@ function CurrentAccounts({ clients, onAddClient, onUpdateClient, onAddClientMove
                     required
                     placeholder="Monto entregado por el cliente"
                     value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(',', '.');
+                      if (/^\d*\.?\d*$/.test(val)) {
+                        setPaymentAmount(val);
+                      }
+                    }}
                   />
                 </Form.Group>
               </Col>

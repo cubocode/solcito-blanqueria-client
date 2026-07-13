@@ -79,7 +79,7 @@ function TicketLayout({ type, data, onClose }) {
         <div className="ticket-header">
           <div className="ticket-logo" style={{ color: 'var(--primary-color)' }}>SOLCITO BLANQUERÍA</div>
           <div>Blanco y Decoración Hogar</div>
-          <div style={{ fontSize: '11px' }}>Tel: 341-1234567</div>
+          <div style={{ fontSize: '11px' }}>Tel: </div>
           <div style={{ fontSize: '11px' }}>IVA Responsable Inscripto</div>
         </div>
 
@@ -130,8 +130,42 @@ function TicketLayout({ type, data, onClose }) {
                 </tr>
                 <tr>
                   <td>Forma de Pago:</td>
-                  <td className="text-right">{data.paymentMethod}</td>
+                  <td className="text-right">{data.paymentMethod === 'Combinado' ? 'Pago Combinado' : data.paymentMethod}</td>
                 </tr>
+                {data.paymentMethod === 'Combinado' && (
+                  <>
+                    {parseFloat(data.pago_efectivo || 0) > 0 && (
+                      <tr style={{ fontSize: '11px', color: '#555' }}>
+                        <td style={{ paddingLeft: '8px' }}>- Efectivo:</td>
+                        <td className="text-right">${parseFloat(data.pago_efectivo).toLocaleString('es-AR')}</td>
+                      </tr>
+                    )}
+                    {parseFloat(data.pago_tarjeta || 0) > 0 && (
+                      <tr style={{ fontSize: '11px', color: '#555' }}>
+                        <td style={{ paddingLeft: '8px' }}>- Tarjeta:</td>
+                        <td className="text-right">${parseFloat(data.pago_tarjeta).toLocaleString('es-AR')}</td>
+                      </tr>
+                    )}
+                    {parseFloat(data.pago_transferencia || 0) > 0 && (
+                      <tr style={{ fontSize: '11px', color: '#555' }}>
+                        <td style={{ paddingLeft: '8px' }}>- Transferencia:</td>
+                        <td className="text-right">${parseFloat(data.pago_transferencia).toLocaleString('es-AR')}</td>
+                      </tr>
+                    )}
+                    {parseFloat(data.pago_qr || 0) > 0 && (
+                      <tr style={{ fontSize: '11px', color: '#555' }}>
+                        <td style={{ paddingLeft: '8px' }}>- QR:</td>
+                        <td className="text-right">${parseFloat(data.pago_qr).toLocaleString('es-AR')}</td>
+                      </tr>
+                    )}
+                    {parseFloat(data.pago_cta_cte || 0) > 0 && (
+                      <tr style={{ fontSize: '11px', color: '#555' }}>
+                        <td style={{ paddingLeft: '8px' }}>- Cuenta Corriente:</td>
+                        <td className="text-right">${parseFloat(data.pago_cta_cte).toLocaleString('es-AR')}</td>
+                      </tr>
+                    )}
+                  </>
+                )}
               </tbody>
             </table>
           </>
@@ -178,7 +212,7 @@ function TicketLayout({ type, data, onClose }) {
         <div className="ticket-footer">
           <div>¡Muchas gracias por su compra!</div>
           <div>Este comprobante no es válido como factura.</div>
-          <div>Desarrollado para Cubo Gestión</div>
+          {/*<div>Desarrollado para Cubo Gestión</div> */}
         </div>
       </div>
 
