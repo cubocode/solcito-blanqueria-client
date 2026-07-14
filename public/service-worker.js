@@ -18,6 +18,15 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Ignorar peticiones que no sean GET y llamadas a APIs
+  if (
+    event.request.method !== 'GET' || 
+    event.request.url.includes('/api/') || 
+    event.request.url.includes('api.solcito.cubocode.com.ar')
+  ) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {
