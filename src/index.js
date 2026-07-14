@@ -26,14 +26,16 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
+// Desregistrar de forma activa cualquier service worker existente para evitar bloqueos de cache o red
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(reg => {
-        console.log('Service worker registered successfully:', reg);
-      })
-      .catch(err => {
-        console.log('Service worker registration failed:', err);
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    for (let registration of registrations) {
+      registration.unregister().then(success => {
+        if (success) {
+          console.log('Service worker desregistrado con éxito.');
+          window.location.reload();
+        }
       });
+    }
   });
 }
