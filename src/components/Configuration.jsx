@@ -3,6 +3,7 @@ import { Table, Button, Form, Row, Col, Modal, Card, InputGroup } from 'react-bo
 import { FiEdit2, FiTrash2, FiSearch, FiUserPlus, FiLock, FiSliders } from 'react-icons/fi';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import { API_BASE_URL } from '../config';
 
 function Configuration() {
   const showToast = useToast();
@@ -28,7 +29,7 @@ function Configuration() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/usuarios');
+      const response = await fetch(`${API_BASE_URL}/api/usuarios`);
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -100,8 +101,8 @@ function Configuration() {
 
     try {
       const url = isEditMode
-        ? `http://localhost:3001/api/usuarios/${currentUser.id}`
-        : 'http://localhost:3001/api/usuarios';
+        ? `${API_BASE_URL}/api/usuarios/${currentUser.id}`
+        : `${API_BASE_URL}/api/usuarios`;
 
       const method = isEditMode ? 'PUT' : 'POST';
 
@@ -142,7 +143,7 @@ function Configuration() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/usuarios/${user.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/usuarios/${user.id}`, {
         method: 'DELETE'
       });
 

@@ -15,6 +15,7 @@ import { FiLogOut } from 'react-icons/fi';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from './context/ToastContext';
 import { useConfirm } from './context/ConfirmContext';
+import { API_BASE_URL } from './config';
 
 
 // No initial mockup data
@@ -73,7 +74,7 @@ function App() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/productos');
+      const response = await fetch(`${API_BASE_URL}/api/productos`);
       if (response.ok) {
         const data = await response.json();
         setDbProducts(data);
@@ -85,7 +86,7 @@ function App() {
 
   const fetchClients = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/clientes');
+      const response = await fetch(`${API_BASE_URL}/api/clientes`);
       if (response.ok) {
         const data = await response.json();
         const clientsWithMovements = data.map(c => ({
@@ -113,7 +114,7 @@ function App() {
 
   const fetchSales = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/ventas');
+      const response = await fetch(`${API_BASE_URL}/api/ventas`);
       if (response.ok) {
         const data = await response.json();
         setSales(data);
@@ -125,7 +126,7 @@ function App() {
 
   const fetchActiveCash = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/cajas/activa');
+      const response = await fetch(`${API_BASE_URL}/api/cajas/activa`);
       if (response.ok) {
         const data = await response.json();
         setCashSession(data);
@@ -137,7 +138,7 @@ function App() {
 
   const fetchCashHistory = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/cajas/historial');
+      const response = await fetch(`${API_BASE_URL}/api/cajas/historial`);
       if (response.ok) {
         const data = await response.json();
         setCashHistory(data);
@@ -149,7 +150,7 @@ function App() {
 
   const fetchCashMovements = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/cajas/movimientos');
+      const response = await fetch(`${API_BASE_URL}/api/cajas/movimientos`);
       if (response.ok) {
         const data = await response.json();
         setCashMovements(data);
@@ -175,7 +176,7 @@ function App() {
 
   const handleAddSale = async (newSale) => {
     try {
-      const response = await fetch('http://localhost:3001/api/ventas', {
+      const response = await fetch(`${API_BASE_URL}/api/ventas`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -217,7 +218,7 @@ function App() {
   // 2. Inventory / Products Management
   const handleAddProduct = async (newProductData) => {
     try {
-      const response = await fetch('http://localhost:3001/api/productos', {
+      const response = await fetch(`${API_BASE_URL}/api/productos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -238,7 +239,7 @@ function App() {
 
   const handleUpdateProduct = async (updatedProductData) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/productos/${updatedProductData.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/productos/${updatedProductData.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -259,7 +260,7 @@ function App() {
 
   const handleDeleteProduct = async (productId) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/productos/${productId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/productos/${productId}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -276,7 +277,7 @@ function App() {
   // 3. Suppliers Management
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/proveedores');
+      const response = await fetch(`${API_BASE_URL}/api/proveedores`);
       if (response.ok) {
         const data = await response.json();
         const formatted = data.map(s => ({
@@ -304,7 +305,7 @@ function App() {
 
   const handleAddSupplier = async (newSupplier) => {
     try {
-      const response = await fetch('http://localhost:3001/api/proveedores', {
+      const response = await fetch(`${API_BASE_URL}/api/proveedores`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -330,7 +331,7 @@ function App() {
 
   const handleUpdateSupplier = async (updatedSupplier) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/proveedores/${updatedSupplier.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/proveedores/${updatedSupplier.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -356,7 +357,7 @@ function App() {
 
   const handleDeleteSupplier = async (supplierId) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/proveedores/${supplierId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/proveedores/${supplierId}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -372,7 +373,7 @@ function App() {
 
   const handleAddSupplierOrder = async (supplierId, orderData) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/proveedores/${supplierId}/pedidos`, {
+      const response = await fetch(`${API_BASE_URL}/api/proveedores/${supplierId}/pedidos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -392,7 +393,7 @@ function App() {
 
   const handleUpdateSupplierOrder = async (supplierId, orderId, orderData) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/proveedores/${supplierId}/pedidos/${orderId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/proveedores/${supplierId}/pedidos/${orderId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -413,7 +414,7 @@ function App() {
   // 4. Client / Current Accounts Management
   const handleAddClient = async (newClient) => {
     try {
-      const response = await fetch('http://localhost:3001/api/clientes', {
+      const response = await fetch(`${API_BASE_URL}/api/clientes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -437,7 +438,7 @@ function App() {
 
   const handleAddClientMovement = async (clientId, movement) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/clientes/${clientId}/movimientos`, {
+      const response = await fetch(`${API_BASE_URL}/api/clientes/${clientId}/movimientos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -464,7 +465,7 @@ function App() {
 
   const handleChangeClientStatus = async (clientId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/clientes/${clientId}/status`, {
+      const response = await fetch(`${API_BASE_URL}/api/clientes/${clientId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -486,7 +487,7 @@ function App() {
 
   const handleUpdateClient = async (updatedClient) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/clientes/${updatedClient.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/clientes/${updatedClient.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -511,7 +512,7 @@ function App() {
   // 5. Cash Control Management
   const handleOpenCash = async (amount) => {
     try {
-      const response = await fetch('http://localhost:3001/api/cajas/abrir', {
+      const response = await fetch(`${API_BASE_URL}/api/cajas/abrir`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -534,7 +535,7 @@ function App() {
 
   const handleAddCashMovement = async (type, amount, concept) => {
     try {
-      const response = await fetch('http://localhost:3001/api/cajas/movimientos', {
+      const response = await fetch(`${API_BASE_URL}/api/cajas/movimientos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -560,7 +561,7 @@ function App() {
 
   const handleCloseCash = async (real, diff, obs) => {
     try {
-      const response = await fetch('http://localhost:3001/api/cajas/cerrar', {
+      const response = await fetch(`${API_BASE_URL}/api/cajas/cerrar`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

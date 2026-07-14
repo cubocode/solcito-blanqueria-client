@@ -3,6 +3,7 @@ import { Row, Col, Form, Button, Table, Card, Modal, InputGroup } from 'react-bo
 import { FiTrash2, FiSearch, FiShoppingCart, FiUser, FiCheckCircle, FiPlus, FiMinus } from 'react-icons/fi';
 import TicketLayout from './TicketLayout';
 import { useToast } from '../context/ToastContext';
+import { API_BASE_URL } from '../config';
 
 function SalesPanel({
   products,
@@ -51,7 +52,7 @@ function SalesPanel({
         return;
       }
       try {
-        const response = await fetch(`http://localhost:3001/api/productos?q=${encodeURIComponent(searchTerm)}`);
+        const response = await fetch(`${API_BASE_URL}/api/productos?q=${encodeURIComponent(searchTerm)}`);
         if (response.ok) {
           const data = await response.json();
           // Map backend products to the POS selector items format

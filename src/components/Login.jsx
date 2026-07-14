@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FiUser, FiLock, FiEye, FiEyeOff, FiLogIn } from 'react-icons/fi';
 import logo from '../images/logonav.png';
 import './Login.css';
+import { API_BASE_URL } from '../config';
 
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState('');
@@ -21,7 +22,7 @@ const Login = ({ onLogin }) => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3001/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
