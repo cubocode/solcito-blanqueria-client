@@ -1,54 +1,21 @@
+// Service worker básico para soporte de instalación PWA sin interferir con las rutas o assets
 const CACHE_NAME = 'cubo-gestion-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.png',
-  '/logo192.png',
-  '/logo512.png'
-];
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
-  );
-});
-
-self.addEventListener('fetch', event => {
-  // Ignorar peticiones que no sean GET y llamadas a APIs
-  if (
-    event.request.method !== 'GET' || 
-    event.request.url.includes('/api/') || 
-    event.request.url.includes('api.solcito.cubocode.com.ar')
-  ) {
-    return;
-  }
-
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
-  );
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('fetch', event => {
+  // Passthrough simple para cumplir con los requisitos PWA sin cachear ni romper peticiones o rutas
+  event.respondWith(
+    fetch(event.request).catch(err => {
+      // Retorna una respuesta fallida estándar de red si el servidor está inaccesible
+      console.warn('Service worker fetch failed for: ', event.request.url, err);
+      return fetch(event.request);
     })
   );
 });
